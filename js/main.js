@@ -4,6 +4,8 @@ import { catalogoView } from './views/catalogo.js';
 import { perfilView } from './views/perfil.js';
 import { sobreView } from './views/sobre.js';
 import { naoEncontradaView } from './views/naoEncontrada.js';
+// Teste de importação de módulo inexistente para verificar o comportamento do workflow.
+import { x } from './nao-existe.js';
 
 const outlet = document.getElementById('app');
 const nav = document.getElementById('nav-principal');
