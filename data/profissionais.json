@@ -1,0 +1,266 @@
+[
+  {
+    "id": 1,
+    "nome": "Marcos Ribeiro Elétrica",
+    "categoria": "Elétrica",
+    "descricao": "Eletricista com mais de 12 anos de experiência em instalações residenciais e comerciais. Atendimento rápido, com orçamento sem compromisso e garantia no serviço.",
+    "cidade": "Francisco Beltrão",
+    "bairro": "Centro",
+    "telefone": "(46) 99100-0001",
+    "email": "marcos.eletrica@exemplo.com",
+    "patrocinado": true,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Troca de tomadas e interruptores", "preco": 80 },
+      { "nome": "Instalação de chuveiro elétrico", "preco": 120 },
+      { "nome": "Revisão do quadro de distribuição", "preco": 250 },
+      { "nome": "Instalação de ventilador de teto", "preco": 150 }
+    ],
+    "avaliacoes": [
+      { "autor": "Patrícia S.", "nota": 5, "comentario": "Chegou no horário combinado e resolveu o problema do disjuntor em meia hora.", "data": "2026-09-12" },
+      { "autor": "Roberto A.", "nota": 5, "comentario": "Serviço limpo e preço justo. Recomendo.", "data": "2026-08-03" },
+      { "autor": "Luciana M.", "nota": 4, "comentario": "Ótimo profissional, só precisei esperar dois dias pela agenda.", "data": "2026-06-21" }
+    ]
+  },
+  {
+    "id": 2,
+    "nome": "Hidro Fácil Encanamentos",
+    "categoria": "Hidráulica",
+    "descricao": "Reparo de vazamentos, desentupimentos e instalação de louças e metais. Equipe pequena e atenciosa, atendendo toda a região sudoeste.",
+    "cidade": "Francisco Beltrão",
+    "bairro": "Cango",
+    "telefone": "(46) 99100-0002",
+    "email": "contato@hidrofacil.exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Caça-vazamentos", "preco": 180 },
+      { "nome": "Desentupimento de pia e ralo", "preco": 130 },
+      { "nome": "Instalação de torneira ou sifão", "preco": 90 },
+      { "nome": "Limpeza de caixa d'água", "preco": 220 }
+    ],
+    "avaliacoes": [
+      { "autor": "Fernando T.", "nota": 5, "comentario": "Encontraram o vazamento que ninguém achava. Muito competentes.", "data": "2026-10-02" },
+      { "autor": "Camila R.", "nota": 4, "comentario": "Bom atendimento e preço dentro do combinado.", "data": "2026-07-15" }
+    ]
+  },
+  {
+    "id": 3,
+    "nome": "Lar Brilhante Limpeza",
+    "categoria": "Limpeza",
+    "descricao": "Limpeza residencial completa, pós-obra e de mudança. Produtos de qualidade e equipe treinada, com opção de diárias avulsas ou semanais.",
+    "cidade": "Pato Branco",
+    "bairro": "Centro",
+    "telefone": "(46) 99100-0003",
+    "email": "lar.brilhante@exemplo.com",
+    "patrocinado": true,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Diária de limpeza residencial", "preco": 160 },
+      { "nome": "Limpeza pós-obra", "preco": 450 },
+      { "nome": "Limpeza de estofados", "preco": 200 },
+      { "nome": "Limpeza de vidros", "preco": 120 }
+    ],
+    "avaliacoes": [
+      { "autor": "Juliana P.", "nota": 5, "comentario": "Deixaram o apartamento impecável depois da reforma.", "data": "2026-10-18" },
+      { "autor": "André C.", "nota": 5, "comentario": "Pontuais e muito cuidadosas com os móveis.", "data": "2026-09-01" },
+      { "autor": "Marta L.", "nota": 5, "comentario": "Contrato diárias toda semana, nunca tive problema.", "data": "2026-08-10" },
+      { "autor": "Vinícius B.", "nota": 4, "comentario": "Ótimo resultado, só o orçamento demorou um pouco.", "data": "2026-05-29" }
+    ]
+  },
+  {
+    "id": 4,
+    "nome": "Madeira & Arte Marcenaria",
+    "categoria": "Marcenaria",
+    "descricao": "Móveis planejados e sob medida: armários, painéis, cozinhas e home office. Projeto com visita técnica e acompanhamento até a instalação.",
+    "cidade": "Francisco Beltrão",
+    "bairro": "Vila Nova",
+    "telefone": "(46) 99100-0004",
+    "email": "madeiraearte@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": false,
+    "servicos": [
+      { "nome": "Visita técnica e projeto", "preco": 0 },
+      { "nome": "Armário sob medida (por metro)", "preco": 1200 },
+      { "nome": "Reparo e restauração de móveis", "preco": 150 }
+    ],
+    "avaliacoes": [
+      { "autor": "Sandra G.", "nota": 5, "comentario": "A cozinha ficou exatamente como imaginei. Acabamento muito bom.", "data": "2026-07-30" },
+      { "autor": "Paulo H.", "nota": 5, "comentario": "Entregou antes do prazo. Trabalho de primeira.", "data": "2026-04-12" }
+    ]
+  },
+  {
+    "id": 5,
+    "nome": "ColorMix Pinturas",
+    "categoria": "Pintura",
+    "descricao": "Pintura interna e externa, textura, grafiato e massa corrida. Trabalho organizado, com proteção de móveis e pisos.",
+    "cidade": "Pato Branco",
+    "bairro": "La Salle",
+    "telefone": "(46) 99100-0005",
+    "email": "colormix@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Pintura de parede (por m²)", "preco": 28 },
+      { "nome": "Aplicação de textura (por m²)", "preco": 35 },
+      { "nome": "Pintura de portão e grades", "preco": 220 }
+    ],
+    "avaliacoes": [
+      { "autor": "Eduardo N.", "nota": 4, "comentario": "Pintura bem feita, equipe educada e organizada.", "data": "2026-09-20" },
+      { "autor": "Tatiane F.", "nota": 5, "comentario": "Casa nova! Cobraram exatamente o orçamento.", "data": "2026-06-05" },
+      { "autor": "Gilberto V.", "nota": 4, "comentario": "Bom serviço. Recomendo agendar com antecedência.", "data": "2026-03-17" }
+    ]
+  },
+  {
+    "id": 6,
+    "nome": "Jardins do Sudoeste",
+    "categoria": "Jardinagem",
+    "descricao": "Manutenção de jardins, poda, corte de grama e paisagismo para residências e condomínios. Plantio com mudas selecionadas.",
+    "cidade": "Francisco Beltrão",
+    "bairro": "Água Branca",
+    "telefone": "(46) 99100-0006",
+    "email": "jardins.sudoeste@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Corte de grama e limpeza", "preco": 90 },
+      { "nome": "Poda de árvores e arbustos", "preco": 180 },
+      { "nome": "Projeto de paisagismo", "preco": 600 }
+    ],
+    "avaliacoes": [
+      { "autor": "Cláudia D.", "nota": 5, "comentario": "O jardim da frente ficou lindo e fácil de cuidar.", "data": "2026-10-09" },
+      { "autor": "Henrique O.", "nota": 4, "comentario": "Bom custo-benefício na manutenção mensal.", "data": "2026-08-22" }
+    ]
+  },
+  {
+    "id": 7,
+    "nome": "TecnoCasa Eletrodomésticos",
+    "categoria": "Assistência técnica",
+    "descricao": "Conserto de geladeiras, máquinas de lavar, micro-ondas e fogões. Diagnóstico no local e peças com garantia de 90 dias.",
+    "cidade": "Francisco Beltrão",
+    "bairro": "Centro",
+    "telefone": "(46) 99100-0007",
+    "email": "tecnocasa@exemplo.com",
+    "patrocinado": true,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Diagnóstico a domicílio", "preco": 70 },
+      { "nome": "Conserto de máquina de lavar", "preco": 190 },
+      { "nome": "Troca de gás/reparo de geladeira", "preco": 280 },
+      { "nome": "Reparo de micro-ondas", "preco": 150 }
+    ],
+    "avaliacoes": [
+      { "autor": "Renata K.", "nota": 5, "comentario": "Consertaram minha lavadora no mesmo dia.", "data": "2026-10-25" },
+      { "autor": "Osvaldo J.", "nota": 5, "comentario": "Explicaram o defeito com clareza, sem enrolação.", "data": "2026-09-14" },
+      { "autor": "Bianca Z.", "nota": 4, "comentario": "Atendimento ótimo, peça demorou a chegar.", "data": "2026-07-02" }
+    ]
+  },
+  {
+    "id": 8,
+    "nome": "Info Rápido Computadores",
+    "categoria": "Assistência técnica",
+    "descricao": "Manutenção de notebooks e computadores, formatação, troca de tela, upgrade de SSD e remoção de vírus. Atendimento em loja ou a domicílio.",
+    "cidade": "Cascavel",
+    "bairro": "Centro",
+    "telefone": "(45) 99100-0008",
+    "email": "inforapido@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Formatação com backup", "preco": 120 },
+      { "nome": "Upgrade de SSD", "preco": 90 },
+      { "nome": "Troca de tela de notebook", "preco": 350 },
+      { "nome": "Remoção de vírus", "preco": 80 }
+    ],
+    "avaliacoes": [
+      { "autor": "Thiago M.", "nota": 5, "comentario": "Meu notebook velho ficou muito mais rápido com o SSD.", "data": "2026-10-01" },
+      { "autor": "Carla E.", "nota": 4, "comentario": "Serviço honesto e rápido.", "data": "2026-08-19" }
+    ]
+  },
+  {
+    "id": 9,
+    "nome": "Monta Tudo Móveis",
+    "categoria": "Montagem de móveis",
+    "descricao": "Montagem e desmontagem de móveis de qualquer marca, instalação de prateleiras, suportes de TV e cortinas. Agendamento por WhatsApp.",
+    "cidade": "Francisco Beltrão",
+    "bairro": "Alvorada",
+    "telefone": "(46) 99100-0009",
+    "email": "montatudo@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Montagem de guarda-roupa", "preco": 160 },
+      { "nome": "Instalação de suporte de TV", "preco": 90 },
+      { "nome": "Instalação de prateleiras", "preco": 70 },
+      { "nome": "Montagem de cozinha modulada", "preco": 320 }
+    ],
+    "avaliacoes": [
+      { "autor": "Daniela R.", "nota": 5, "comentario": "Montou tudo em uma tarde e deixou a casa limpa.", "data": "2026-09-27" },
+      { "autor": "Felipe A.", "nota": 5, "comentario": "Muito caprichoso, não sobrou parafuso.", "data": "2026-07-11" },
+      { "autor": "Mônica S.", "nota": 4, "comentario": "Bom serviço e preço justo.", "data": "2026-05-04" }
+    ]
+  },
+  {
+    "id": 10,
+    "nome": "Casa em Dia Manutenção",
+    "categoria": "Manutenção geral",
+    "descricao": "Pequenos reparos em geral: portas, fechaduras, infiltrações, alvenaria e rejunte. Um profissional para resolver várias pendências de uma vez.",
+    "cidade": "Pato Branco",
+    "bairro": "Bortot",
+    "telefone": "(46) 99100-0010",
+    "email": "casaemdia@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Diária de pequenos reparos", "preco": 220 },
+      { "nome": "Troca de fechadura", "preco": 110 },
+      { "nome": "Correção de infiltração", "preco": 350 }
+    ],
+    "avaliacoes": [
+      { "autor": "Ricardo P.", "nota": 4, "comentario": "Resolveu uma lista inteira de pendências em um dia.", "data": "2026-10-11" },
+      { "autor": "Silvia B.", "nota": 5, "comentario": "Muito prestativo e pontual.", "data": "2026-06-30" }
+    ]
+  },
+  {
+    "id": 11,
+    "nome": "Refrigeração Gelo Norte",
+    "categoria": "Assistência técnica",
+    "descricao": "Instalação, higienização e manutenção de ar-condicionado split e câmaras frias. Contratos de manutenção para pequenos comércios.",
+    "cidade": "Cascavel",
+    "bairro": "Country",
+    "telefone": "(45) 99100-0011",
+    "email": "gelonorte@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": false,
+    "servicos": [
+      { "nome": "Instalação de split 9.000–12.000 BTUs", "preco": 450 },
+      { "nome": "Higienização de ar-condicionado", "preco": 180 },
+      { "nome": "Carga de gás", "preco": 300 }
+    ],
+    "avaliacoes": [
+      { "autor": "Léo V.", "nota": 5, "comentario": "Instalação impecável e sem sujeira.", "data": "2026-09-09" },
+      { "autor": "Adriana C.", "nota": 5, "comentario": "Atendem rápido em dias de calor, o que ajuda muito.", "data": "2026-02-18" }
+    ]
+  },
+  {
+    "id": 12,
+    "nome": "Verde Vivo Paisagismo",
+    "categoria": "Jardinagem",
+    "descricao": "Projetos de jardins, hortas urbanas e manutenção de áreas externas. Orientação sobre plantas adequadas ao clima da região.",
+    "cidade": "Curitiba",
+    "bairro": "Batel",
+    "telefone": "(41) 99100-0012",
+    "email": "verdevivo@exemplo.com",
+    "patrocinado": false,
+    "aceitandoClientes": true,
+    "servicos": [
+      { "nome": "Consultoria de paisagismo", "preco": 250 },
+      { "nome": "Implantação de horta residencial", "preco": 480 },
+      { "nome": "Manutenção mensal de jardim", "preco": 200 }
+    ],
+    "avaliacoes": [
+      { "autor": "Isabela F.", "nota": 5, "comentario": "Montou uma horta linda na minha varanda.", "data": "2026-08-30" },
+      { "autor": "Rafael G.", "nota": 5, "comentario": "Profissional muito atenciosa, dá ótimas dicas.", "data": "2026-04-25" }
+    ]
+  }
+]
