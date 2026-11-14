@@ -69,13 +69,13 @@ Não há dependências para instalar. Como a aplicação carrega o arquivo JSON 
 
    ```bash
    # Python 3
-   python3 -m http.server 8080
+   python3 -m http.server 3000
 
    # ou, com Node.js
    npx serve .
    ```
 
-3. Acesse <http://localhost:8080> no navegador.
+3. Acesse <http://localhost:3000> no navegador.
 
 Também é possível usar a extensão **Live Server** do VS Code.
 
