@@ -43,11 +43,13 @@ Navegação (rotas por hash):
 
 ## Tecnologias utilizadas
 
-- HTML5, CSS3 e JavaScript (ES Modules), sem frameworks e sem etapa de build
+- HTML5, CSS3 e JavaScript (ES Modules), sem frameworks
 - Roteamento próprio baseado em hash (`hashchange`)
 - Dados estáticos em arquivo JSON (`data/profissionais.json`)
 - `localStorage` para persistir avaliações no navegador
+- Node.js e npm para os scripts de build e de testes (sem dependências de terceiros)
 - Git e GitHub para versionamento
+- GitHub Actions para integração contínua
 
 ## Possibilidades de monetização
 
@@ -79,10 +81,81 @@ Não há dependências para instalar. Como a aplicação carrega o arquivo JSON 
 
 Também é possível usar a extensão **Live Server** do VS Code.
 
+Para executar localmente as mesmas verificações do pipeline (requer Node.js 20 ou superior):
+
+```bash
+npm ci          # instala as dependências (o projeto não possui dependências de terceiros)
+npm run build   # valida o projeto e gera a pasta dist/
+npm test        # executa os testes automatizados
+```
+
+## Integração Contínua
+
+O projeto possui um pipeline de integração contínua que verifica automaticamente cada alteração enviada ao repositório, garantindo que o projeto continue sendo construído corretamente.
+
+### Ferramenta utilizada
+
+[GitHub Actions](https://docs.github.com/pt/actions). O workflow está definido em `.github/workflows/ci.yml` e é executado em uma máquina virtual `ubuntu-latest` fornecida pelo próprio GitHub.
+
+### Quando o pipeline é executado
+
+Automaticamente, a cada:
+
+- **push** na branch `main`;
+- **pull request** destinado à branch `main`.
+
+### Etapas do pipeline
+
+```text
+PUSH / PULL REQUEST
+        │
+        ▼
+CHECKOUT                  (actions/checkout: baixa o código do repositório)
+        │
+        ▼
+INSTALAÇÃO DAS DEPENDÊNCIAS   (setup-node + npm ci)
+        │
+        ▼
+BUILD                     (npm run build)
+        │
+        ├──── sucesso ────► ✓
+        │
+        └──── falha ──────► ✗
+```
+
+1. **Checkout:** obtém o código-fonte da alteração enviada.
+2. **Instalação das dependências:** configura o Node.js 22 e executa `npm ci`, que instala as dependências exatamente como definidas no `package-lock.json`. Hoje o projeto não possui bibliotecas de terceiros, então a etapa é rápida, mas ela já deixa o fluxo pronto para quando elas existirem.
+3. **Build:** executa `npm run build` (`scripts/build.mjs`), que:
+   - valida o arquivo `data/profissionais.json` (JSON válido, campos obrigatórios e ids únicos);
+   - verifica a sintaxe de todos os arquivos JavaScript;
+   - confere se todos os `import` apontam para arquivos existentes e se os arquivos referenciados pelo `index.html` existem;
+   - gera a pasta `dist/` com a versão pronta para publicação.
+4. **Testes:** executa `npm test`, que roda os testes automatizados da lógica de busca e filtros.
+
+Se qualquer etapa falhar, o pipeline é marcado como reprovado (✗) e o GitHub informa qual etapa e qual mensagem de erro causaram o problema.
+
+### Como verificar uma execução
+
+1. Acesse o repositório no GitHub e abra a aba **Actions**.
+2. Selecione a execução desejada (cada commit ou pull request gera uma). O nome da execução é a mensagem do commit.
+3. Um ícone verde (✓) indica sucesso; um ícone vermelho (✗) indica falha.
+4. Clique na execução e depois no job **Build** para ver o log de cada etapa. Em caso de falha, a etapa com erro fica destacada e o log mostra o motivo (por exemplo, `import quebrado em js/main.js`).
+
+Os dois cenários possíveis:
+
+```text
+Commit → Pipeline → Build ✓
+Commit → Pipeline → Build ✗
+```
+
 ## Estrutura do projeto
 
 ```text
 conecta-plus/
+├── .github/workflows/ci.yml  # Pipeline de integração contínua (GitHub Actions)
+├── scripts/build.mjs     # Script de build: valida o projeto e gera dist/
+├── tests/                # Testes automatizados
+├── package.json          # Scripts npm (build e test)
 ├── index.html            # Casca da SPA (cabeçalho, área principal, rodapé)
 ├── css/styles.css        # Estilos e responsividade
 ├── data/profissionais.json   # Dados fictícios (mock)
