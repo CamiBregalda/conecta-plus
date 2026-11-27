@@ -97,6 +97,33 @@ jobs:
           --json-output=semgrep-report.json
           --text
 
+      - name: Resumo dos achados do Semgrep
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import json, os, collections
+          try:
+              dados = json.load(open("semgrep-report.json"))
+          except Exception as erro:
+              print("Sem relatório para resumir:", erro)
+              raise SystemExit(0)
+          resultados = dados.get("results", [])
+          grupos = collections.defaultdict(list)
+          for r in resultados:
+              grupos[r["check_id"]].append(r)
+          linhas = [f"## Achados do Semgrep: {len(resultados)}", "",
+                    "| Regra | Qtde | Locais |", "| --- | --- | --- |"]
+          for regra, itens in sorted(grupos.items(), key=lambda kv: -len(kv[1])):
+              locais = ", ".join(f"`{i['path']}:{i['start']['line']}`" for i in itens[:8])
+              if len(itens) > 8:
+                  locais += f" … (+{len(itens) - 8})"
+              linhas.append(f"| `{regra}` | {len(itens)} | {locais} |")
+          texto = "\n".join(linhas)
+          print(texto)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(texto + "\n")
+          PY
+
       - name: Guardar relatório do Semgrep
         if: always()
         uses: actions/upload-artifact@v4
