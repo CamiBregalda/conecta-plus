@@ -19,8 +19,7 @@ const resultado = spawnSync(
     '--test-reporter-destination=stdout',
     '--test-reporter=lcov',
     '--test-reporter-destination=coverage/lcov.info',
-    'tests/filtros.test.mjs',
-    'tests/healthcheck.test.mjs',
+    'tests/**/*.test.mjs',
   ],
   { cwd: raiz, stdio: 'inherit' }
 );
