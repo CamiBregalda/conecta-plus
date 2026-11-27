@@ -1,0 +1,10 @@
+# Configuração do Gitleaks: usa as regras padrão (AWS, GitHub, chaves privadas, tokens etc.).
+title = "Conecta+ - Gitleaks"
+
+[extend]
+useDefault = true
+
+# Falsos positivos devem ser liberados aqui, de forma explícita e justificada.
+# [allowlist]
+# description = "Exemplo"
+# paths = ['''caminho/do/arquivo''']

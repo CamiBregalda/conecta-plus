@@ -1,0 +1,17 @@
+# Fora do contexto de build: reduz o tamanho, acelera o build e evita vazar arquivos locais.
+.git
+.github
+node_modules
+dist
+coverage
+tests
+*.md
+.env
+.env.*
+*.pem
+*.key
+.vscode
+.idea
+.DS_Store
+Dockerfile
+.dockerignore
