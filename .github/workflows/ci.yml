@@ -224,7 +224,7 @@ jobs:
     needs: gate
     permissions:
       contents: read
-      packages: write   
+      packages: write  
     env:
       PUBLICAR: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
@@ -285,4 +285,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha      
+          cache-from: type=gha
