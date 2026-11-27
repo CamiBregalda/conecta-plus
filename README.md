@@ -50,6 +50,7 @@ Navegação (rotas por hash):
 - Node.js e npm para os scripts de build e de testes (sem dependências de terceiros)
 - Git e GitHub para versionamento
 - GitHub Actions para CI/CD e monitoramento, e GitHub Pages para hospedagem
+- Docker (nginx) e GitHub Container Registry para a imagem da aplicação (bônus)
 
 ## Possibilidades de monetização
 
@@ -85,8 +86,10 @@ Para executar localmente as mesmas verificações do pipeline (requer Node.js 20
 
 ```bash
 npm ci          # instala as dependências (o projeto não possui dependências de terceiros)
-npm run build   # valida o projeto e gera a pasta dist/
+npm run lint    # verifica sintaxe e boas práticas do JavaScript
 npm test        # executa os testes automatizados (inclui os do health check)
+npm run coverage # testes com cobertura (gera coverage/lcov.info)
+npm run build   # valida o projeto e gera a pasta dist/
 ```
 
 ## Integração Contínua
@@ -125,25 +128,28 @@ PUSH / PULL REQUEST
                                                      │
                                      ├── falha ──► ✗  (nada é construído nem publicado)
                                      ▼ sucesso
-                                      4 BUILD    npm run build → artefato dist/
-                                                     │
-                                                     ▼
-                                      5 DEPLOY   GitHub Pages (somente em push na main)
-                                                     │
-                                                     ▼
-                                      APLICAÇÃO PUBLICADA ✓
+                                      ├──► 4 BUILD    npm run build → artefato dist/
+                                      │         │
+                                      │         ▼
+                                      │    5 DEPLOY   GitHub Pages (somente em push na main)
+                                      │         │
+                                      │         ▼
+                                      │    APLICAÇÃO PUBLICADA ✓
+                                      │
+                                      └──► 6 DOCKER (bônus)  imagem → teste → GHCR
 ```
 
 Testes e qualidade rodam em sequência (`qualidade` depende de `testes`); as verificações de segurança são jobs independentes e rodam ao mesmo tempo, para o pipeline terminar mais rápido. O `gate` espera todos eles, e o `build` só começa se o gate aprovar:
 
 | Job | O que faz |
 | --- | --- |
-| `testes` | Checkout, Node.js 22, `npm ci`, `npm run lint`, `npm test` e `npm run coverage`. O relatório de cobertura é guardado como artefato para a etapa seguinte. |
+| `testes` | Checkout, Node.js 22, `npm ci`, `npm run lint` (`scripts/lint.mjs`: sintaxe, `var`, `==`, `eval`, `debugger`, `console.log`), `npm test` e `npm run coverage` (`scripts/coverage.mjs`). O relatório de cobertura é guardado como artefato para a etapa seguinte. |
 | `qualidade` | Baixa a cobertura e executa o SonarQube com `-Dsonar.qualitygate.wait=true`, que reprova se o Quality Gate não for atendido. O token vem do secret `SONAR_TOKEN`. |
 | `sast`, `sca`, `secrets` | Verificações de segurança (veja a seção **Segurança**). |
 | `gate` | Espera `testes`, `qualidade`, `sast`, `sca` e `secrets` e reprova se alguma não terminou em `success`. |
 | `build` | Gera o artefato da aplicação (veja **Build e artefato**). |
 | `deploy` | Publica o artefato no GitHub Pages (veja **Deploy**). |
+| `docker` | Constrói a imagem, testa o container e a publica no GHCR (veja **Docker**). |
 
 Se qualquer etapa falhar, o pipeline é marcado como reprovado (✗), as etapas seguintes não são executadas e o GitHub informa qual etapa e qual mensagem causaram o problema.
 
@@ -303,6 +309,62 @@ node scripts/healthcheck.mjs https://camibregalda.github.io/conecta-plus/
 
 > **Observação:** o GitHub desativa workflows agendados em repositórios públicos sem atividade por 60 dias. Se isso acontecer, basta reativar o workflow na aba **Actions**.
 
+## Docker (bônus)
+
+A aplicação também pode ser executada em container. A imagem é construída, testada e publicada automaticamente pelo pipeline, sem custo e sem cadastro de cartão: o registry é o **GitHub Container Registry (GHCR)**, gratuito e integrado ao repositório.
+
+### Arquivos
+
+| Arquivo | Função |
+| --- | --- |
+| `Dockerfile` | Receita da imagem, em dois estágios (veja abaixo) |
+| `docker/nginx.conf` | Configuração do servidor nginx: porta 8080, compressão, cabeçalhos de segurança e `/healthz` |
+| `.dockerignore` | Arquivos que ficam fora do build (`.git`, `node_modules`, testes, `.env` etc.) |
+
+### Como a imagem é construída
+
+O `Dockerfile` usa **multi-stage build**:
+
+1. **Estágio `build`** (`node:22-alpine`): instala as dependências com `npm ci` e executa `npm run build`, o mesmo build do pipeline, gerando `dist/`.
+2. **Estágio final** (`nginxinc/nginx-unprivileged:1.27-alpine`): copia **apenas** o `dist/` e a configuração do nginx.
+
+A imagem final não contém Node.js, código-fonte, testes nem dependências de desenvolvimento, o que a deixa pequena e reduz a superfície de ataque. O nginx roda como **usuário não-root** (porta 8080) e há um `HEALTHCHECK` que consulta `/healthz`, de modo que o Docker sinaliza o container como `unhealthy` se a aplicação parar de responder.
+
+### Executar localmente
+
+```bash
+# construir a imagem
+docker build -t conecta-plus .
+
+# executar o container
+docker run --rm -p 8080:8080 conecta-plus
+```
+
+Acesse <http://localhost:8080>. Para usar a imagem já publicada, sem construir:
+
+```bash
+docker run --rm -p 8080:8080 ghcr.io/camibregalda/conecta-plus:latest
+```
+
+### Integração ao pipeline
+
+O job `docker` do `ci.yml` roda depois do gate (ou seja, só se testes, qualidade e segurança passaram) e executa:
+
+1. **Construir a imagem** com o Docker Buildx, usando cache do GitHub Actions para acelerar.
+2. **Executar o container** e esperar o endpoint `/healthz` responder.
+3. **Testar a aplicação dentro do container** com o mesmo `scripts/healthcheck.mjs` usado no monitoramento (página, conteúdo, dados e arquivos).
+4. **Publicar no GHCR**, somente em push na `main`: a imagem recebe as tags `latest` e `sha-<commit>` (para saber exatamente de qual commit veio) e rótulos OCI com os metadados do repositório.
+
+Em pull requests, o pipeline constrói e testa a imagem, mas **não publica**.
+
+### Segurança
+
+- A autenticação no GHCR usa o `GITHUB_TOKEN` automático, com a permissão `packages: write` concedida somente a esse job. Nenhuma senha ou token é guardado no repositório.
+- A imagem roda sem privilégios de root, o `.dockerignore` impede que `.env` e chaves entrem no contexto de build, e o nginx envia cabeçalhos de segurança (CSP, `X-Content-Type-Options`, `X-Frame-Options`).
+- O Dependabot também acompanha as imagens base do `Dockerfile`.
+
+> **Observação:** no primeiro envio, confira em **Packages** (página do repositório ou do perfil) se a visibilidade da imagem está como **Public**; se estiver privada, altere em *Package settings → Change visibility*.
+
 ## Estrutura do projeto
 
 ```text
@@ -312,6 +374,11 @@ conecta-plus/
 ├── .github/dependabot.yml    # Atualização automática de dependências e actions
 ├── .gitleaks.toml        # Configuração do secret scanning
 ├── .semgrepignore        # Pastas ignoradas pelo SAST
+├── Dockerfile            # Imagem da aplicação (multi-stage: build + nginx)
+├── docker/nginx.conf     # Configuração do nginx do container
+├── .dockerignore         # Arquivos fora do contexto de build
+├── scripts/lint.mjs      # Lint sem dependências
+├── scripts/coverage.mjs  # Testes com cobertura (lcov)
 ├── scripts/build.mjs     # Build: valida o projeto e gera o artefato dist/
 ├── scripts/healthcheck.mjs   # Health check da aplicação publicada
 ├── tests/                # Testes automatizados
