@@ -7,11 +7,20 @@ on:
   pull_request:
     branches: [main]
 
-jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+# Princípio do menor privilégio: o GITHUB_TOKEN só lê o conteúdo do repositório.
+permissions:
+  contents: read
 
+# Evita dois deploys simultâneos; um deploy em andamento nunca é cancelado no meio.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # 1. Testes: lint, unitários e cobertura de testes.
+  testes:
+    name: 1. Testes (lint, unitários, cobertura)
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -32,7 +41,32 @@ jobs:
         run: npm test
 
       - name: Test coverage
-        run: npm run coverage  
+        run: npm run coverage
+
+      - name: Guardar relatório de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: warn
+
+  # 2. Qualidade: análise de qualidade do código com SonarQube.
+  qualidade:
+    name: 2. Qualidade (SonarQube)
+    runs-on: ubuntu-latest
+    needs: testes
+    steps:
+      - name: Checkout do código (histórico completo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Baixar relatório de cobertura
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+        continue-on-error: true
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7
@@ -42,5 +76,143 @@ jobs:
           args: >
             -Dsonar.qualitygate.wait=true
 
+  # 3. SAST: análise estática do código-fonte em busca de padrões inseguros.
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Semgrep
+        run: >
+          semgrep scan
+          --config p/javascript
+          --config p/owasp-top-ten
+          --config p/cwe-top-25
+          --metrics=off
+          --error
+          --json-output=semgrep-report.json
+          --text
+
+      - name: Guardar relatório do Semgrep
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+          if-no-files-found: ignore
+
+  # 4. SCA: análise de dependências e vulnerabilidades conhecidas (CVEs).
+  sca:
+    name: SCA (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências (versões exatas do lockfile)
+        run: npm ci
+
+      - name: Executar npm audit
+        run: npm audit --audit-level=high
+
+  # 5. Secret scanning: procura credenciais no código e em todo o histórico do Git.
+  secrets:
+    name: Secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout do código (histórico completo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 6. Gate: bloqueia o merge se houver falhas em qualquer etapa anterior.
+  gate:
+    name: Gate (bloquear falhas)
+    runs-on: ubuntu-latest
+    needs: [testes, qualidade, sast, sca, secrets]
+    if: always()
+    steps:
+      - name: Avaliar resultados
+        env:
+          TESTES: ${{ needs.testes.result }}
+          QUALIDADE: ${{ needs.qualidade.result }}
+          SAST: ${{ needs.sast.result }}
+          SCA: ${{ needs.sca.result }}
+          SECRETS: ${{ needs.secrets.result }}
+        run: |
+          echo "Testes:             $TESTES"
+          echo "Qualidade (Sonar):  $QUALIDADE"
+          echo "SAST (Semgrep):     $SAST"
+          echo "SCA (npm audit):    $SCA"
+          echo "Secrets (Gitleaks): $SECRETS"
+          for r in "$TESTES" "$QUALIDADE" "$SAST" "$SCA" "$SECRETS"; do
+            if [ "$r" != "success" ]; then
+              echo "::error::Gate reprovado: há etapas que não passaram."
+              exit 1
+            fi
+          done
+          echo "Gate aprovado: todas as verificações passaram."        
+
+  # 7. Build: compila o código e gera os artefatos.
+  build:
+    name: 4. Build e artefato
+    runs-on: ubuntu-latest
+    needs: gate
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
       - name: Build
         run: npm run build
+
+      - name: Listar arquivos do artefato
+        run: find dist -type f | sort
+
+      - name: Publicar artefato (dist/)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  # 8. Deploy: publica o site no GitHub Pages.
+  deploy:
+    name: 5. Deploy (GitHub Pages)
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write      
+      id-token: write  
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

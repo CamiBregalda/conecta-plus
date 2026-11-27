@@ -1,0 +1,123 @@
+name: Monitoramento
+
+# Responsabilidades separadas:
+#   CI/CD (ci.yml):         verifica se uma NOVA versão pode ser validada e entregue.
+#   Monitoramento (este):   verifica se a versão JÁ PUBLICADA continua disponível e funcional.
+#
+# Fluxo: GitHub Actions → Aplicação publicada → Health Check → Sucesso/Falha
+on:
+  # Periodicamente: a cada 30 minutos (horário UTC; o GitHub pode atrasar alguns minutos).
+  schedule:
+    - cron: "*/30 * * * *"
+
+  # Logo após o deploy: roda quando o workflow "CI" termina na branch main.
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+  # Manualmente, pela aba Actions (permite informar outra URL).
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL a verificar (vazio = URL padrão da aplicação)"
+        required: false
+        type: string
+
+# Evita execuções sobrepostas do monitoramento.
+concurrency:
+  group: monitoramento
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write # abrir, comentar e fechar a Issue de indisponibilidade
+
+jobs:
+  health-check:
+    name: Health check da aplicação
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Após um workflow_run, só verifica se o CI/CD terminou com sucesso (ou seja, houve deploy).
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Definir a URL da aplicação
+        id: alvo
+        env:
+          URL_INFORMADA: ${{ inputs.url }}
+          URL_VARIAVEL: ${{ vars.APP_URL }}
+        run: |
+          # Prioridade: entrada manual > variável APP_URL do repositório > URL padrão do GitHub Pages.
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          URL="${URL_INFORMADA:-${URL_VARIAVEL:-https://${OWNER}.github.io/${REPO}/}}"
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "URL monitorada: ${URL}"
+
+      - name: Health check (com novas tentativas)
+        id: hc
+        # Não derruba o job aqui: o resultado é tratado nos passos seguintes
+        # (Issue) e o job é reprovado explicitamente no último passo.
+        continue-on-error: true
+        env:
+          HC_RETRIES: "3"
+          # Depois de um deploy, o Pages pode levar alguns instantes para propagar.
+          HC_DELAY: ${{ github.event_name == 'workflow_run' && '30' || '15' }}
+          HC_TIMEOUT: "15"
+          HC_TEXTO: "Conecta+"
+          URL: ${{ steps.alvo.outputs.url }}
+        run: node scripts/healthcheck.mjs "$URL"
+
+      - name: Abrir ou atualizar Issue de indisponibilidade
+        if: steps.hc.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          URL: ${{ steps.alvo.outputs.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create indisponibilidade --color B60205 \
+            --description "Aplicação publicada fora do ar" 2>/dev/null || true
+
+          EXISTENTE=$(gh issue list --label indisponibilidade --state open --json number --jq '.[0].number // empty')
+          CORPO="A verificação automática não conseguiu confirmar que a aplicação está disponível.
+
+          - **URL:** ${URL}
+          - **Detectado em (UTC):** $(date -u +'%Y-%m-%d %H:%M:%S')
+          - **Execução:** ${RUN_URL}
+
+          O detalhe de cada verificação está no resumo da execução. Esta Issue será fechada automaticamente quando a aplicação voltar a responder."
+
+          if [ -n "$EXISTENTE" ]; then
+            gh issue comment "$EXISTENTE" --body "Aplicação ainda indisponível. Nova verificação falhou: ${RUN_URL}"
+          else
+            gh issue create --label indisponibilidade \
+              --title "🔴 Aplicação indisponível: ${URL}" --body "$CORPO"
+          fi
+
+      - name: Fechar Issue quando a aplicação se recuperar
+        if: steps.hc.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          for N in $(gh issue list --label indisponibilidade --state open --json number --jq '.[].number'); do
+            gh issue close "$N" --comment "✅ Aplicação disponível novamente. Verificação: ${RUN_URL}"
+          done
+
+      - name: Registrar resultado final
+        # Reprova a execução (✗ no histórico do Actions) quando a aplicação está indisponível.
+        if: steps.hc.outcome == 'failure'
+        env:
+          URL: ${{ steps.alvo.outputs.url }}
+        run: |
+          echo "::error::Aplicação indisponível: ${URL}"
+          exit 1
