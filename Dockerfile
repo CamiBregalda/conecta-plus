@@ -16,7 +16,7 @@ RUN npm run build
 # ───────────── Estágio 2: execução ─────────────
 # Imagem final: apenas o nginx e o artefato dist/ (sem Node, código-fonte ou testes).
 # A variante "unprivileged" roda como usuário não-root, na porta 8080.
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
