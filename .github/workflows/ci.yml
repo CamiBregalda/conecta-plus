@@ -215,7 +215,7 @@ jobs:
     steps:
       - name: Deploy no GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   # 9. Docker (bônus): constrói a imagem, testa o container e publica no GitHub Container Registry.
   docker:
