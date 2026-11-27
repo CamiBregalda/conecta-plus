@@ -1,16 +1,21 @@
-# Segurança da cadeia de suprimentos: PRs automáticos para atualizar dependências
-# e as versões das actions usadas no pipeline.
+# Segurança da cadeia de suprimentos: PRs automáticos para atualizar dependências e as versões das actions usadas no pipeline.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
