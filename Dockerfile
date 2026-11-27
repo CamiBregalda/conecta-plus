@@ -2,7 +2,7 @@
 
 # ───────────── Estágio 1: build ─────────────
 # Executa o mesmo build do pipeline (npm run build) e gera a pasta dist/.
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 # Copia só os manifestos primeiro: a camada de dependências fica em cache
