@@ -8,7 +8,7 @@
     "start": "npx serve .",
     "lint": "node scripts/lint.mjs",
     "test": "node --test \"tests/**/*.test.mjs\"",
-    "coverage": "vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov",
+    "coverage": "node scripts/coverage.mjs",
     "build": "node scripts/build.mjs"
   },
   "engines": {
